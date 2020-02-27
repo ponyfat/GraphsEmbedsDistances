@@ -1,5 +1,3 @@
-import graphkernels.kernels as gk
-from igraph import Graph
 from itertools import combinations
 from functools import reduce
 import random
