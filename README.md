@@ -26,7 +26,7 @@ Usage:
 ```
 G = generateClicks(5)
 ge = GraphletEmbeddings()
-embeddings = ge.compute_embeddings(G, k)
+embeddings = ge.compute_embeddings(G, 3)
 ```
 ## Analysis (in module distances_analysis.utils.analysis)
 Plotting/computing c instruments.
