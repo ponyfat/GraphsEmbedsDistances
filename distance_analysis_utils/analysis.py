@@ -14,6 +14,11 @@ def get_distances(from_, others, distance_function):
         distances.append(distance)
     return np.array(distances)
 
+def save_results(graph_dists, emb_dists, emb_name, ds_name, path):
+    print(f'{path}/{emb_name}_{ds_name}_gdist')
+    np.save(f'{path}/{emb_name}_{ds_name}_gdist', graph_dists)
+    np.save(f'{path}/{emb_name}_{ds_name}_edist', emb_dists)
+
 def plot_one_hypothesis(ax, graph_distances, embed_distances, c=1, bounds='both'):
     ax.plot(graph_distances, label='Graph dist')
     if bounds == 'both' or bounds == 'lower':
