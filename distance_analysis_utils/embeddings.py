@@ -54,19 +54,12 @@ class GraphletEmbeddings():
         return np.array(embeddings)
 
 class WLEmbeddings():
-    def compute_indices(unique, unique_labels):
-        indices = np.zeros(unique.shape[0], dtype='int')
-        for i in range(unique_labels.shape[0]):
-            for j in range(unique.shape[0]):
-                if unique_labels[i] == unique[j]:
-                    indices[j] = i
-        return indices
-
-    def get_embedding(labels, unique_labels):
+    def get_embedding(labels, unique_labels_to_inds, embedding_size):
         unique, counts = np.unique(labels, return_counts=True)
-        embedding = np.zeros(unique_labels.shape[0])
-        indices = WLEmbeddings.compute_indices(unique, unique_labels)
-        embedding[indices] = counts
+        embedding = np.zeros(embedding_size)
+        for label, count in zip(unique, counts):
+            ind = unique_labels_to_inds[label]
+            embedding[ind] = count
         return embedding
     
     def __init__(self):
@@ -99,9 +92,11 @@ class WLEmbeddings():
        
         # computing embeddings from labels
         unique_labels = np.concatenate(tuple(graphs_labels))
-        print(f'Dimension is {unique_labels.shape[0]}')
+        embedding_size = unique_labels.shape[0]
+        print(f'Dimension is {embedding_size}')
         print('Cleaning...')
-        embeddings = [WLEmbeddings.get_embedding(labels, unique_labels) for labels in tqdm_notebook(graphs_labels)]
+        unique_labels_to_inds = dict(zip(unique_labels, np.arange(embedding_size)))
+        embeddings = [WLEmbeddings.get_embedding(labels, unique_labels_to_inds, embedding_size) for labels in tqdm_notebook(graphs_labels)]
         return embeddings
 
 def WLEmbedsEndToEnd(data, graph_distance, embed_distance, cs=[1, 10, 100, 500],
