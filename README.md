@@ -21,6 +21,13 @@ Require list of networx objects as an input.
 1. WLEmbeddings
 2. GraphletEmbeddings
 
+Usage:
+
+```
+G = generateClicks(5)
+ge = GraphletEmbeddings()
+embeddings = ge.compute_embeddings(G, k)
+```
 ## Analysis (in module distances_analysis.utils.analysis)
 Plotting/computing c instruments.
 
