@@ -55,10 +55,10 @@ class GraphletEmbeddings():
 
 class WLEmbeddings():
     def get_embedding(labels, unique_labels_to_inds, embedding_size):
-        unique, counts = np.unique(labels, axis=0, return_counts=True)
+        unique, counts = np.unique(labels, return_counts=True)
         embedding = np.zeros(embedding_size)
         for label, count in zip(unique, counts):
-            ind = unique_labels_to_inds[tuple(label)]
+            ind = unique_labels_to_inds[label]
             embedding[ind] = count
         return embedding
     
@@ -71,17 +71,16 @@ class WLEmbeddings():
         pass
     
     def relabel_graph(self, labels, G):
-        new_labels = np.copy(labels)
+        new_labels = np.zeros(G.number_of_nodes())
         for node in range(G.number_of_nodes()):
             neighbors = list(G.neighbors(node))
-            new_labels[node] = labels[neighbors].sum(axis=0) + labels[node]
+            neighbors.append(node)
+            new_label = hash(tuple(np.sort(labels[neighbors])))
+            new_labels[node] = new_label
         return new_labels
             
     def compute_labels(self, G, iterations):
-        # size of each label
-        label_size = G.number_of_nodes()
-        # initialize labels with node degrees
-        labels = np.array([WLEmbeddings.int_to_numpy_label(val, label_size) for (node, val) in G.degree()])
+        labels = np.zeros(G.number_of_nodes())
         for i in range(iterations):
             labels = self.relabel_graph(labels, G)
         return labels
@@ -91,10 +90,10 @@ class WLEmbeddings():
         graphs_labels = []
         for G in tqdm_notebook(Gs):
             labels = self.compute_labels(G, iterations)
-            graphs_labels.append(list(map(tuple, labels)))
+            graphs_labels.append(labels)
        
         # computing embeddings from labels
-        unique_labels = set(chain.from_iterable(graphs_labels))
+        unique_labels = np.unique(graphs_labels)
         embedding_size = len(unique_labels)
         print(f'Dimension is {embedding_size}')
         print('Computing embeddings...')
