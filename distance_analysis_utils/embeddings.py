@@ -1,4 +1,4 @@
-from itertools import combinations
+from itertools import combinations, chain
 from functools import reduce
 import random
 import os
@@ -55,46 +55,49 @@ class GraphletEmbeddings():
 
 class WLEmbeddings():
     def get_embedding(labels, unique_labels_to_inds, embedding_size):
-        unique, counts = np.unique(labels, return_counts=True)
+        unique, counts = np.unique(labels, axis=0, return_counts=True)
         embedding = np.zeros(embedding_size)
         for label, count in zip(unique, counts):
-            ind = unique_labels_to_inds[label]
+            ind = unique_labels_to_inds[tuple(label)]
             embedding[ind] = count
         return embedding
+    
+    def int_to_numpy_label(i, size):
+        x = np.zeros(size, dtype='int')
+        x[i] = 1
+        return x
     
     def __init__(self):
         pass
     
     def relabel_graph(self, labels, G):
-        new_labels = []
+        new_labels = np.copy(labels)
         for node in range(G.number_of_nodes()):
             neighbors = list(G.neighbors(node))
-            neighbors.append(node)
-            
-            neighbors_labels = labels[neighbors]
-            new_label = tuple(neighbors_labels)
-            new_labels.append(hash(new_label))
-        return np.array(new_labels)
+            new_labels[node] = labels[neighbors].sum(axis=0) + labels[node]
+        return new_labels
             
     def compute_labels(self, G, iterations):
-        n = G.number_of_nodes()
-        labels = np.zeros(n)
+        # size of each label
+        label_size = G.number_of_nodes()
+        # initialize labels with node degrees
+        labels = np.array([WLEmbeddings.int_to_numpy_label(val, label_size) for (node, val) in G.degree()])
         for i in range(iterations):
             labels = self.relabel_graph(labels, G)
         return labels
     
     def compute_embeddings(self, Gs, iterations):
-        print('Computing embeddings...')
+        print('Performing iterations...')
         graphs_labels = []
         for G in tqdm_notebook(Gs):
             labels = self.compute_labels(G, iterations)
-            graphs_labels.append(labels)
+            graphs_labels.append(list(map(tuple, labels)))
        
         # computing embeddings from labels
-        unique_labels = np.concatenate(tuple(graphs_labels))
-        embedding_size = unique_labels.shape[0]
+        unique_labels = set(chain.from_iterable(graphs_labels))
+        embedding_size = len(unique_labels)
         print(f'Dimension is {embedding_size}')
-        print('Cleaning...')
+        print('Computing embeddings...')
         unique_labels_to_inds = dict(zip(unique_labels, np.arange(embedding_size)))
         embeddings = [WLEmbeddings.get_embedding(labels, unique_labels_to_inds, embedding_size) for labels in tqdm_notebook(graphs_labels)]
         return embeddings
