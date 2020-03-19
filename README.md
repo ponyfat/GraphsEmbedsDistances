@@ -18,7 +18,11 @@ united with ![equation](https://latex.codecogs.com/gif.latex?d%20-%20i) vertices
 ## Embeddings (in module distances_analysis.utils.embeddings)
 Require list of networx objects as an input.
 
-1. WLEmbeddings (not yet verified)
+1. WLEmbeddings
+```
+we = WLEmbeddings()
+E = we.compute_embeddings(data, iterations)
+```
 2. GraphletEmbeddings
 
 ## Analysis (in module distances_analysis.utils.analysis)
