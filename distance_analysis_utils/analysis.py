@@ -14,10 +14,12 @@ def get_distances(from_, others, distance_function):
         distances.append(distance)
     return np.array(distances)
 
-def save_results(graph_dists, emb_dists, emb_name, ds_name, path):
+def save_results(graph_dists, emb_dists, emb_name, ds_name, path, emb_sim=None):
     print(f'{path}/{emb_name}_{ds_name}_gdist')
     np.save(f'{path}/{emb_name}_{ds_name}_gdist', graph_dists)
     np.save(f'{path}/{emb_name}_{ds_name}_edist', emb_dists)
+    if emb_sim is not None:
+        np.save(f'{path}/{emb_name}_{ds_name}_esim', emb_sim)
 
 def plot_one_hypothesis(ax, graph_distances, embed_distances, c=1, bounds='both'):
     ax.plot(graph_distances, label='Graph dist')
@@ -77,7 +79,17 @@ def find_c(graph_distances, embed_distances, c_max, approx=0.01):
 def fastEdgeDistance(G, other_G):
     return float(np.abs(G.number_of_edges() - other_G.number_of_edges()))
 
+def diffSizedClicksDistance(G, other_G):
+    return float(np.abs(G.number_of_edges() - other_G.number_of_edges()) + np.abs(G.number_of_nodes() - other_G.number_of_nodes()))
+
+
 def find_c_growth(graph_distances, embed_distances, c_max, approx=0.01):
+    c_growth = []
+    for i in range(0, len(graph_distances)):
+        c_growth.append(find_c(graph_distances[i], embed_distances[i], c_max, approx))
+    return c_growth
+
+def find_c_growth_inside(graph_distances, embed_distances, c_max, approx=0.01):
     c_growth = []
     for i in range(0, graph_distances.shape[0]):
         c_growth.append(find_c(graph_distances[:i], embed_distances[:i], c_max, approx))
@@ -87,8 +99,17 @@ def plot_c_growth(c_growth, ds_title=''):
     plt.figure(figsize=(7, 5))
     plt.plot(c_growth, label='c growth', c='orange')
     plt.ylabel('Optimal c approximation')
-    plt.xlabel('Size of data')
+    plt.xlabel('Size of dataset')
     plt.title(f'C growth for {ds_title}')
+    plt.grid()
+    plt.legend()
+
+def plot_embs_sim(emb_sim, ds_title=''):
+    plt.figure(figsize=(7, 5))
+    plt.plot(emb_sim, label='Dot product of f(0) and f(i)', c='green')
+    plt.ylabel('Similiarity')
+    plt.xlabel('i')
+    plt.title(f'Dot product similiarity {ds_title}')
     plt.grid()
     plt.legend()
 

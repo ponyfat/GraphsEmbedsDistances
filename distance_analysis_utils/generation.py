@@ -40,23 +40,33 @@ def removeRandomEdge(G):
 
 def generateRandomEdgeRemoval(d=10):
     rer = [nx.complete_graph(d)]
-    for i in range(0, d * (d - 1) // 2):
+    for i in tqdm_notebook(range(0, d * (d - 1) // 2)):
         next_graph = removeRandomEdge(rer[-1].copy())
         rer.append(next_graph)
     return rer
 
+def generateDiffSizedClicks(d=10):
+    clicks = []
+    for i in range(1, d + 1):
+        click = nx.complete_graph(i)
+        clicks.append(click)
+    return clicks
 
-def dumpDataset(dataset_name, dataset):
+
+def dumpDataset(dataset_name, dataset, lxml=False):
     # add a folder for the dataset
     try:
         os.mkdir(os.getcwd() + '/' + dataset_name)
     except Exception:
         return
-    
     # dump all graphml files
     for i, graph in enumerate(dataset):
-        with open(f"{dataset_name}/{dataset_name}_{i + 1}.graphml", 'w') as f:
-            nx.write_graphml_lxml(graph, f"{dataset_name}/{dataset_name}_{i + 1}.graphml")
+        if lxml:
+            with open(f"{dataset_name}/{dataset_name}_{i + 1}.graphml", 'w') as f:
+                nx.write_graphml_lxml(graph, f"{dataset_name}/{dataset_name}_{i + 1}.graphml")
+        else:
+            with open(f"{dataset_name}/{dataset_name}_{i + 1}.graphml", 'w') as f:
+                nx.write_graphml_xml(graph, f"{dataset_name}/{dataset_name}_{i + 1}.graphml")
 
 def createDataset(generator, name):
     ds = generator()

@@ -102,7 +102,7 @@ class WLEmbeddings():
         return embeddings
 
 def WLEmbedsEndToEnd(data, graph_distance, embed_distance, cs=[1, 10, 100, 500],
-                     iterations=3, title='', xtitle='Euclidian dist', ytitle='Edit dist'):
+                     iterations=3, title='', xtitle='Euclidian dist', ytitle='Edit dist', show_plots=False):
     print('Getting embeddings...')
     we = WLEmbeddings()
     E = we.compute_embeddings(data, iterations)
@@ -110,19 +110,25 @@ def WLEmbedsEndToEnd(data, graph_distance, embed_distance, cs=[1, 10, 100, 500],
     edit_distances = get_distances(data[0], data, graph_distance)
     print('Getting embed distances...')
     embed_distances = get_distances(E[0], E, embed_distance)
-    plot_hypothesis(edit_distances, embed_distances, title=title, cs=cs, xtitle='Euclidian dist', ytitle='Edit dist')
-    test_hypothesis(edit_distances, embed_distances, cs=cs)
-    return edit_distances, embed_distances
+    similiarities = get_distances(E[0], E, np.dot)
+    if show_plots:
+        plot_hypothesis(edit_distances, embed_distances, title=title, cs=cs, xtitle='Euclidian dist', ytitle='Edit dist')
+        test_hypothesis(edit_distances, embed_distances, cs=cs)
+    return edit_distances, embed_distances, similiarities
 
 def GraphletEmbedsEndToEnd(data, graph_distance, embed_distance, cs=[1, 10, 100, 500],
-                           k=3, title='', xtitle='Euclidian dist', ytitle='Edit dist'):
+                           k=3, title='', xtitle='Euclidian dist', ytitle='Edit dist', show_plots=False):
     print('Getting embeddings...')
     ge = GraphletEmbeddings()
     E = ge.compute_embeddings(data, k)
+    # normalizing
+    E = E / E.sum(axis=1)[..., np.newaxis]
     print('Getting graph distances...')
     edit_distances = get_distances(data[0], data, graph_distance)
     print('Getting embed distances...')
     embed_distances = get_distances(E[0], E, embed_distance)
-    plot_hypothesis(edit_distances, embed_distances, title=title, cs=cs, xtitle='Euclidian dist', ytitle='Edit dist')
-    test_hypothesis(edit_distances, embed_distances, cs=cs)
-    return edit_distances, embed_distances
+    similiarities = get_distances(E[0], E, np.dot)
+    if show_plots:
+        plot_hypothesis(edit_distances, embed_distances, title=title, cs=cs, xtitle='Euclidian dist', ytitle='Edit dist')
+        test_hypothesis(edit_distances, embed_distances, cs=cs)
+    return edit_distances, embed_distances, similiarities
