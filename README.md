@@ -1,4 +1,4 @@
-# Graphs/Embeds Distances
+# Relation between Graphs and Embeddings Distances
 This reporitory is dedicated to the analysis of how the distance between graph embeddings (WL/Graphlet) is connected to the distance between corresponding graphs.
 
 ## Generation (in module distances_analysis.utils.generation)
